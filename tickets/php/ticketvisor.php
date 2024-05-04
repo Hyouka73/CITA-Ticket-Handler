@@ -22,12 +22,18 @@ $resultado_tickets_asignados = mysqli_query($db, $sql_tickets_asignados);
 
 // Verificar si se obtuvieron resultados
 if ($resultado_tickets_asignados) {
-    // Inicializar un array para almacenar los tickets asignados
-    $ticketsAsignados = array();
+    // Inicializar un array para almacenar los tickets asignados agrupados por estado
+    $ticketsAsignadosPorEstado = array(
+        'Abierto' => array(),
+        'Pendiente' => array(),
+        'En Progreso' => array(),
+        'Cerrado' => array()
+    );
 
     // Recorrer los resultados y almacenar los tickets asignados en el array
     while ($fila = mysqli_fetch_assoc($resultado_tickets_asignados)) {
-        $ticketsAsignados[] = $fila;
+        $estado = $fila['Estado'];
+        $ticketsAsignadosPorEstado[$estado][] = $fila;
     }
 } else {
     // Si hubo un error en la consulta, mostrar un mensaje de error
@@ -39,6 +45,9 @@ if ($resultado_tickets_asignados) {
 <html>
 <head>
     <title>Perfil y Tickets</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/sweetalert2@11/dist/sweetalert2.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11/dist/sweetalert2.all.min.js"></script>
+
     <style>
         body {
             font-family: Arial, sans-serif;
@@ -60,17 +69,40 @@ if ($resultado_tickets_asignados) {
 
         .ticket-container {
             display: flex;
-            flex-wrap: wrap;
-            justify-content: center;
-            gap: 20px;
+            flex-direction: row;
+            overflow-x: auto;
+            max-width: 100%;
+            --rows: 1fr;
+
+            /* Estilo para las barras de desplazamiento */
+            scrollbar-color: #ccc transparent; /* Color de la barra de desplazamiento y fondo */
+            scrollbar-width: thin; /* Ancho de la barra de desplazamiento */
+        }
+
+        /* Estilos para navegadores basados en WebKit (Chrome, Safari, Opera) */
+        .ticket-container::-webkit-scrollbar {
+            width: 8px; /* Ancho de la barra de desplazamiento */
+            height: 8px; /* Altura de la barra de desplazamiento */
+        }
+
+        .ticket-container::-webkit-scrollbar-track {
+            background-color: transparent; /* Color del fondo de la pista */
+        }
+
+        .ticket-container::-webkit-scrollbar-thumb {
+            background-color: #ccc; /* Color de la barra de desplazamiento */
+            border-radius: 4px; /* Radio de borde de la barra de desplazamiento */
         }
 
         .ticket-card {
-            width: calc(33.33% - 20px);
+            flex: 0 0 calc(33.33% - 20px);
+            max-width: calc(33.33% - 20px);
+            margin-right: 20px;
             border: 1px solid #ccc;
             border-radius: 5px;
             padding: 10px;
             background-color: #fff;
+            
         }
 
         .ticket-title {
@@ -123,17 +155,27 @@ if ($resultado_tickets_asignados) {
 
         .logout-link {
             display: block;
+            font-size: 20px;
             margin-top: 20px;
             text-decoration: none;
             color: #007bff;
         }
 
         .logout-link:hover {
+            font-size: 30px;
             text-decoration: underline;
         }
+
     </style>
 </head>
 <body>
+    
+<?php if (isset($error_message)): ?>
+    <script>
+        Swal.fire('Error', '<?php echo $error_message; ?>', 'error');
+    </script>
+    <?php endif; 
+?>
 
 <div class="container">
     <div class="info">
@@ -143,42 +185,47 @@ if ($resultado_tickets_asignados) {
     </div>
 
     <h2>Tickets Asignados</h2>
-    <div class="ticket-container">
-        <?php if (isset($ticketsAsignados) && !empty($ticketsAsignados)): ?>
-            <?php foreach ($ticketsAsignados as $ticket): ?>
-                <div class="ticket-card">
-                    <h3 class="ticket-title"><?php echo $ticket['Titulo']; ?></h3>
-                    <p class="ticket-description"><?php echo $ticket['Descripcion']; ?></p>
-                    <p class="ticket-info">Prioridad: <?php echo $ticket['Prioridad']; ?></p>
-                    <p class="ticket-info">Tipo: <?php echo $ticket['Tipo']; ?></p>
-                    <p class="ticket-info">Estado: <?php echo $ticket['Estado']; ?></p>
-                    <p class="ticket-info">Fecha de creación: <?php echo $ticket['FechaCreacion']; ?></p>
-                    <p class="ticket-info">Comentarios: <?php echo $ticket['Comentarios']; ?></p>
 
-                    <?php if ($ticket['Estado'] != 'Cerrado'): ?>
-                        <form action="actualizar_estado.php" method="POST">
-                            <input type="hidden" name="ticket_id" value="<?php echo $ticket['TicketID']; ?>">
-                            <label for="estado">Cambiar Estado:</label>
-                            <select id="estado" name="estado" required>
-                                <option value="Abierto">Abierto</option>
-                                <option value="En Progreso">En Progreso</option>
-                                <option value="Cerrado">Cerrado</option>
-                                <option value="Pendiente">Pendiente</option>
-                            </select>
-                            <button type="submit">Guardar</button>
-                        </form> 
-                    <?php else: ?>
-                        <p class="ticket-info">El ticket está cerrado y no se puede modificar.</p>
-                    <?php endif; ?>
+    <?php if (!empty($ticketsAsignadosPorEstado)): ?>
+        <?php foreach (array('Abierto', 'Pendiente', 'En Progreso', 'Cerrado') as $estado): ?>
+            <?php if (!empty($ticketsAsignadosPorEstado[$estado])): ?>
+                <h3><?php echo $estado; ?></h3>
+                <div class="ticket-container">
+                    <?php foreach ($ticketsAsignadosPorEstado[$estado] as $ticket): ?>
 
+                            <div class="ticket-card">
+                                <h3 class="ticket-title"><?php echo $ticket['Titulo']; ?></h3>
+                                <p class="ticket-description"><?php echo $ticket['Descripcion']; ?></p>
+                                <p class="ticket-info">Prioridad: <?php echo $ticket['Prioridad']; ?></p>
+                                <p class="ticket-info">Tipo: <?php echo $ticket['Tipo']; ?></p>
+                                <p class="ticket-info">Fecha de creación: <?php echo $ticket['FechaCreacion']; ?></p>
+                                <p class="ticket-info">Comentarios: <?php echo $ticket['Comentarios']; ?></p>
+    
+                                <?php if ($ticket['Estado'] != 'Cerrado'): ?>
+                                    <form action="actualizar_estado.php" method="POST">
+                                        <input type="hidden" name="ticket_id" value="<?php echo $ticket['TicketID']; ?>">
+                                        <label for="estado">Cambiar Estado:</label>
+                                        <select id="estado" name="estado" required>
+                                            <option value="Abierto" <?php if ($ticket['Estado'] == 'Abierto') echo 'selected'; ?>>Abierto</option>
+                                            <option value="Pendiente" <?php if ($ticket['Estado'] == 'Pendiente') echo 'selected'; ?>>Pendiente</option>
+                                            <option value="En Progreso" <?php if ($ticket['Estado'] == 'En Progreso') echo 'selected'; ?>>En Progreso</option>
+                                            <option value="Cerrado" <?php if ($ticket['Estado'] == 'Cerrado') echo 'selected'; ?>>Cerrado</option>
+                                        </select>
+                                        <button type="submit">Guardar</button>
+                                    </form>
+                                <?php else: ?>
+                                    <p class="ticket-info">El ticket está cerrado y no se puede modificar.</p>
+                                <?php endif; ?>
+                            </div>
+                    <?php endforeach; ?>
                 </div>
-            <?php endforeach; ?>
-        <?php else: ?>
-            <p>No tienes tickets asignados en este momento.</p>
-        <?php endif; ?>
-    </div>
+            <?php endif; ?>
+        <?php endforeach; ?>
+    <?php else: ?>
+        <p>No tienes tickets asignados en este momento.</p>
+    <?php endif; ?>
 
-    <a href="cerrar_sesion.php" class="logout-link">Cerrar Sesión</a> <!-- Enlace para cerrar sesión -->
+    <a href="cerrar_sesion.php" class="logout-link">Cerrar Sesión</a>
 </div>
 
 </body>

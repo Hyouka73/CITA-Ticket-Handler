@@ -30,13 +30,13 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
                 header("Location: ticketvisor.php");
                 exit();
             } else {
-                echo "Contraseña incorrecta.";
+                $error_message = "Contraseña incorrecta.";
             }
         } else {
-            echo "El usuario no existe.";
+            $error_message = "El usuario no existe.";
         }
     } else {
-        echo "Error al ejecutar la consulta: " . mysqli_error($db);
+        $error_message = "Error al ejecutar la consulta: " . mysqli_error($db);
     }
 }
 ?>
@@ -46,6 +46,9 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
 <html>
 <head>
     <title>Iniciar Sesión</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/sweetalert2@11/dist/sweetalert2.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11/dist/sweetalert2.all.min.js"></script>
+
     <style>
         body {
             display: flex;
@@ -119,6 +122,12 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
 </head>
 <body>
 
+<?php if (isset($error_message)): ?>
+    <script>
+        Swal.fire('Error', '<?php echo $error_message; ?>', 'error');
+    </script>
+    <?php endif; 
+?>
     
 <form method="post" action="<?php echo htmlspecialchars($_SERVER["PHP_SELF"]); ?>">
         <h2>Iniciar Sesión</h2>
@@ -132,8 +141,9 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
     <input type="submit" value="Iniciar Sesión">
     <button onclick="window.location.href='estadisticas.php'">Estadísticas</button>
     <button onclick="window.location.href='ticketcreate.php'">Crear un Ticket</button>
-</form>
+    <button onclick="window.location.href='seguirtickets.php'">Ver los Tickets</button>
 
+</form>
 
 </body>
 </html>

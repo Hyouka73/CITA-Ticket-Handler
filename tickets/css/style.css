@@ -1,0 +1,91 @@
+body {
+    font-family: Arial, sans-serif;
+    background-color: #f4f4f4;
+    margin: 0;
+    padding: 0;
+}
+
+.container {
+    max-width: 800px;
+    margin: 0 auto;
+    padding: 20px;
+    text-align: center;
+}
+
+.info {
+    margin-bottom: 20px;
+}
+
+.ticket-container {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 20px;
+}
+
+.ticket-card {
+    width: calc(33.33% - 20px);
+    border: 1px solid #ccc;
+    border-radius: 5px;
+    padding: 10px;
+    background-color: #fff;
+}
+
+.ticket-title {
+    font-size: 18px;
+    font-weight: bold;
+    margin-bottom: 5px;
+}
+
+.ticket-description {
+    font-size: 16px;
+    margin-bottom: 10px;
+}
+
+.ticket-info {
+    font-size: 14px;
+    color: #666;
+    margin-bottom: 5px;
+}
+
+.ticket-info:last-child {
+    margin-bottom: 0;
+}
+
+form {
+    text-align: center;
+    margin-top: 20px;
+}
+
+form select,
+form textarea {
+    width: calc(100% - 20px);
+    padding: 5px;
+    border: 1px solid #ccc;
+    border-radius: 5px;
+    margin-top: 5px;
+}
+
+form button {
+    padding: 8px 20px;
+    background-color: #007bff;
+    color: #fff;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+}
+
+form button:hover {
+    background-color: #0056b3;
+}
+
+.logout-link {
+    display: block;
+    margin-top: 20px;
+    text-decoration: none;
+    color: #007bff;
+}
+
+.logout-link:hover {
+    text-decoration: underline;
+}

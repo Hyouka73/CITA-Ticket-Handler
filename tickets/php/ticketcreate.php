@@ -19,11 +19,13 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
     // Ejecutar la consulta
     $insert_ticket = mysqli_query($db, $sql);
 
-    // Verificar si la inserción fue exitosa
+    // Preparar el tipo de alerta según el resultado
     if ($insert_ticket) {
-        echo "Ticket registrado correctamente.";
+        $alert_type = "success";
+        $alert_message = "Ticket registrado correctamente.";
     } else {
-        echo "Error al registrar el ticket: " . mysqli_error($db);
+        $alert_type = "error";
+        $alert_message = "Error al registrar el ticket: " . mysqli_error($db);
     }
 }
 ?>
@@ -32,6 +34,8 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
 <html>
 <head>
     <title>Registro de Ticket</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/sweetalert2@11/dist/sweetalert2.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11/dist/sweetalert2.all.min.js"></script>
     <style>
         body {
             display: flex;
@@ -89,6 +93,19 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
     </style>
 </head>
 <body>
+
+<script>
+        // Obtener el tipo de alerta y el mensaje desde PHP
+        var alertType = '<?php echo $alert_type; ?>';
+        var alertMessage = '<?php echo $alert_message; ?>';
+
+        // Mostrar la alerta correspondiente
+        if (alertType === 'success') {
+            Swal.fire('Éxito', alertMessage, 'success');
+        } else if (alertType === 'error') {
+            Swal.fire('Error', alertMessage, 'error');
+        }
+    </script>
 
 <form action="<?php echo htmlspecialchars($_SERVER["PHP_SELF"]); ?>" method="post">
     <h2>Registro de Ticket</h2>
